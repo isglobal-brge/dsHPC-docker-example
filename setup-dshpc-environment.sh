@@ -171,14 +171,45 @@ setup_repository() {
         cp "setup-dshpc-environment.sh" "$temp_setup_script_file"
     fi
     
-    # Check if we're already in a git repository
-    if [[ -d ".git" ]]; then
-        echo -e "${YELLOW}Git repository already exists, updating...${NC}"
-        git pull origin main || git pull origin master || echo -e "${YELLOW}Could not update repository${NC}"
-        echo -e "${GREEN}✓ Repository updated${NC}"
+    # Check if base repository needs updating by cloning to temp directory and comparing
+    echo -e "${YELLOW}Checking base repository for updates...${NC}"
+    local temp_check_dir=$(mktemp -d)
+    local needs_update=false
+    
+    # Always clone fresh to check for updates
+    git clone "$BASE_REPO" "$temp_check_dir/${ENV_NAME}-docker-check" &>/dev/null
+    
+    if [[ $? -eq 0 ]]; then
+        # If we have existing repository files, compare with fresh clone
+        if [[ -f "docker-compose.yml" ]] || [[ -f "Dockerfile" ]] || [[ -d ".git" ]]; then
+            echo -e "${CYAN}Comparing with base repository...${NC}"
+            # Simple check: compare a key file's modification time or content
+            if [[ -f "docker-compose.yml" ]] && [[ -f "$temp_check_dir/${ENV_NAME}-docker-check/docker-compose.yml" ]]; then
+                if ! cmp -s "docker-compose.yml" "$temp_check_dir/${ENV_NAME}-docker-check/docker-compose.yml"; then
+                    needs_update=true
+                    echo -e "${YELLOW}Base repository has updates available${NC}"
+                else
+                    echo -e "${GREEN}✓ Repository is up to date${NC}"
+                fi
+            else
+                needs_update=true
+                echo -e "${YELLOW}Base repository files missing, will update${NC}"
+            fi
+        else
+            needs_update=true
+            echo -e "${YELLOW}No base repository files found, will clone${NC}"
+        fi
+        
+        rm -rf "$temp_check_dir"
     else
-        echo -e "Cloning from: $BASE_REPO"
-        echo -e "${YELLOW}Cloning repository contents to current directory...${NC}"
+        echo -e "${RED}❌ Could not access base repository for update check${NC}"
+        rm -rf "$temp_check_dir"
+        exit 1
+    fi
+    
+    if [[ "$needs_update" == true ]]; then
+        echo -e "Updating from: $BASE_REPO"
+        echo -e "${YELLOW}Updating repository contents to current directory...${NC}"
         
         # Clone to temporary directory first
         local temp_dir=$(mktemp -d)
@@ -210,12 +241,14 @@ setup_repository() {
             # Return to original directory
             cd "$original_dir"
             rm -rf "$temp_dir"
-            echo -e "${GREEN}✓ Repository contents copied to current directory${NC}"
+            echo -e "${GREEN}✓ Repository contents updated in current directory${NC}"
         else
             echo -e "${RED}❌ Failed to clone repository${NC}"
             rm -rf "$temp_dir"
             exit 1
         fi
+    else
+        echo -e "${GREEN}✓ Base repository is already up to date${NC}"
     fi
     
     # Restore all preserved user files
