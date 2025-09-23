@@ -353,8 +353,8 @@ generate_env_file() {
 # Generated on $(date)
 
 # API Configuration
-${docker_prefix_upper}_API_EXTERNAL_PORT=$DEFAULT_PORT
-${docker_prefix_upper}_API_KEY=$api_key
+API_EXTERNAL_PORT=$DEFAULT_PORT
+API_KEY=$api_key
 
 # Docker Stack Configuration
 COMPOSE_PROJECT_NAME=${DOCKER_PREFIX}
@@ -366,6 +366,27 @@ EOF
         echo -e "${GREEN}✓ Environment file created: .env${NC}"
         echo -e "${YELLOW}📝 Generated API Key: $api_key${NC}"
         echo -e "${CYAN}💡 You can modify these settings in .env${NC}"
+    fi
+    
+    echo
+}
+
+# Configure docker-compose with dynamic prefix
+configure_docker_compose() {
+    echo -e "${CYAN}⚙️  Configuring Docker Compose with prefix: $DOCKER_PREFIX${NC}"
+    
+    if [[ -f "docker-compose.yml" ]]; then
+        # Replace the template placeholder with the actual prefix
+        if command -v sed &> /dev/null; then
+            # Use sed to replace the placeholder
+            sed -i.bak "s/__DOCKER_PREFIX__/$DOCKER_PREFIX/g" docker-compose.yml
+            rm -f docker-compose.yml.bak 2>/dev/null
+            echo -e "${GREEN}✓ Docker Compose configured with prefix: $DOCKER_PREFIX${NC}"
+        else
+            echo -e "${YELLOW}⚠️  sed not available, docker-compose.yml may need manual configuration${NC}"
+        fi
+    else
+        echo -e "${RED}❌ docker-compose.yml not found${NC}"
     fi
     
     echo
@@ -427,6 +448,7 @@ main() {
     validate_environment
     setup_repository
     setup_environment
+    configure_docker_compose
     generate_env_file
     
     # Ask user if they want to build images now
