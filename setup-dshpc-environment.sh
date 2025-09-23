@@ -397,7 +397,8 @@ build_images() {
     echo -e "${CYAN}🔨 Building Docker images...${NC}"
     
     echo -e "Building images for $DISPLAY_NAME..."
-    echo -e "${YELLOW}Using --no-cache to ensure fresh build...${NC}"
+    echo -e "${YELLOW}Using --no-cache to ensure fresh build with latest configuration...${NC}"
+    echo -e "${CYAN}💡 This ensures Python/R dependencies from environment config are properly installed${NC}"
     if docker-compose build --no-cache --parallel; then
         echo -e "${GREEN}✓ Docker images built successfully${NC}"
     else
@@ -430,9 +431,12 @@ generate_instructions() {
     echo -e "${BOLD}${CYAN}Useful Commands:${NC}"
     echo -e "• ${YELLOW}View logs:${NC} docker-compose logs -f"
     echo -e "• ${YELLOW}Stop services:${NC} docker-compose down"
-    echo -e "• ${YELLOW}Rebuild after changes:${NC} docker-compose build --no-cache"
+    echo -e "• ${YELLOW}Rebuild after config changes:${NC} docker-compose build --no-cache"
     echo -e "• ${YELLOW}Check status:${NC} docker-compose ps"
     echo -e "• ${YELLOW}Clean rebuild:${NC} docker-compose down && docker-compose build --no-cache && docker-compose up"
+    echo
+    echo -e "${RED}⚠️  IMPORTANT:${NC} ${BOLD}Always use --no-cache when rebuilding${NC}"
+    echo -e "${CYAN}   This ensures Python/R dependencies from environment/ are properly installed${NC}"
     echo
 }
 
@@ -453,6 +457,7 @@ main() {
     
     # Ask user if they want to build images now
     echo -e "${YELLOW}Do you want to build Docker images now? This may take several minutes.${NC}"
+    echo -e "${CYAN}Note: Images will be built with --no-cache to ensure dependencies from your environment config are properly installed.${NC}"
     echo -e "${CYAN}You can also build them later with: docker-compose build --no-cache${NC}"
     read -p "Build images now? (y/N): " -n 1 -r
     echo
@@ -461,6 +466,8 @@ main() {
         build_images
     else
         echo -e "${YELLOW}Skipping image build. You can build later when ready.${NC}"
+        echo -e "${RED}⚠️  IMPORTANT: Always use --no-cache when building to ensure environment dependencies are installed:${NC}"
+        echo -e "${YELLOW}   docker-compose build --no-cache${NC}"
         echo
     fi
     
