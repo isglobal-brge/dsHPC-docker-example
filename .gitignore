@@ -123,3 +123,9 @@ docker-volumes/
 /tmp
 *.tmp
 .DS_Store 
+
+# Project directories and files
+config/
+src/
+docker-compose.yml
+LICENSE
