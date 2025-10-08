@@ -1,5 +1,7 @@
 {
   "r_version": "4.4.2",
   "packages": {
+    "magick": "2.8.3",
+    "jsonlite": "1.8.8"
   }
 } 
