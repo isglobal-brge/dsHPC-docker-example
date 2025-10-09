@@ -1,0 +1,15 @@
+{
+  "name": "analyze_pixel_count",
+  "description": "Analyzes the output from count_black_pixels methods and categorizes the image darkness",
+  "command": "Rscript",
+  "script_path": "main.R",
+  "parameters": [
+    {
+      "name": "darkness_threshold",
+      "description": "Minimum black percentage to consider an image 'dark enough' (0-100)",
+      "type": "float",
+      "required": false,
+      "default": 10.0
+    }
+  ]
+}
