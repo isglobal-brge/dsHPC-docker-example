@@ -1,0 +1,23 @@
+{
+  "name": "generate_image_report",
+  "description": "Generates a comprehensive report from pixel analysis, including quality assessment and recommendations",
+  "command": "Rscript",
+  "script_path": "main.R",
+  "parameters": [
+    {
+      "name": "include_recommendations",
+      "description": "Whether to include recommendations in the report",
+      "type": "boolean",
+      "required": false,
+      "default": true
+    },
+    {
+      "name": "quality_threshold",
+      "description": "Quality score threshold (0-100) for determining image quality category",
+      "type": "number",
+      "required": false,
+      "default": 50.0
+    }
+  ]
+}
+
